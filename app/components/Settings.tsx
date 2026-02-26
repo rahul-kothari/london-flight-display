@@ -2,14 +2,7 @@
 import { useEffect, useRef } from "react";
 import useLocalStorageState from "use-local-storage-state";
 
-interface SettingsProps {
-  showBoats: boolean;
-  onShowBoats: (showBoats: boolean) => void;
-  showTrains: boolean;
-  onShowTrains: (showTrains: boolean) => void;
-}
-
-export default function Settings({ showBoats, onShowBoats, showTrains, onShowTrains }: SettingsProps) {
+export default function Settings() {
   const [sleepLock, _setSleepLock] = useLocalStorageState('sleepLock', { defaultValue: false });
   const wakeLock = useRef<null | WakeLockSentinel>(null);
 
@@ -41,24 +34,6 @@ export default function Settings({ showBoats, onShowBoats, showTrains, onShowTra
             className="mr-2"
           />
           Sleep Lock
-        </label>
-        <label className="flex items-center">
-          <input
-            type="checkbox"
-            checked={showBoats}
-            onChange={e => onShowBoats(e.target.checked)}
-            className="mr-2"
-          />
-          Show Boats
-        </label>
-        <label className="flex items-center">
-          <input
-            type="checkbox"
-            checked={showTrains}
-            onChange={e => onShowTrains(e.target.checked)}
-            className="mr-2"
-          />
-          Show Trains
         </label>
       </div>
     </div>
