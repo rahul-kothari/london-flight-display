@@ -55,7 +55,7 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done
 - [ ] **3.3** Verify LCY arrivals/departures show (airport is ~1.5 miles away)
 - [ ] **3.4** Check STN and LGW — assess if they produce useful results or too much noise
 - [ ] **3.5** Tune approach zone polygons based on what's actually visible from the rooftop
-- [ ] **3.6** Update home coordinate once user provides exact GPS coords
+- [x] **3.6** Update home coordinate once user provides exact GPS coords
 - [ ] **3.7** Check for unknown airline/aircraft codes in the UI; expand `app/utils/flights.ts` mappings as needed
 
 ---

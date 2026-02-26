@@ -1,78 +1,87 @@
-<p align="center">
-  <a href="https://nextjs-fastapi-starter.vercel.app/">
-    <img src="https://assets.vercel.com/image/upload/v1588805858/repositories/vercel/logo.png" height="96">
-    <h3 align="center">Next.js FastAPI Starter</h3>
-  </a>
-</p>
+# London Flight Tracker
 
-<p align="center">Simple Next.js boilerplate that uses <a href="https://fastapi.tiangolo.com/">FastAPI</a> as the API backend.</p>
+Real-time flight tracker for a rooftop in Canary Wharf, London. Shows flights arriving and departing from LHR, LCY, LGW, and STN that are currently within 5km of your home coordinate.
 
-<br/>
+**Stack:** Next.js 13 + React 18 + TypeScript + Tailwind + FastAPI (Python) + Flightradar24 (no API key required)
 
-## Introduction
+---
 
-This is a hybrid Next.js + Python app that uses Next.js as the frontend and FastAPI as the API backend. One great use case of this is to write Next.js apps that use Python AI libraries on the backend.
+## Prerequisites
 
-## How It Works
+- Node.js 18+
+- Python 3.9+
+- npm
 
-The Python/FastAPI server is mapped into to Next.js app under `/api/`.
+---
 
-This is implemented using [`next.config.js` rewrites](https://github.com/digitros/nextjs-fastapi/blob/main/next.config.js) to map any request to `/api/:path*` to the FastAPI API, which is hosted in the `/api` folder.
+## First-time setup
 
-On localhost, the rewrite will be made to the `127.0.0.1:8000` port, which is where the FastAPI server is running.
+1. **Install Node dependencies**
+   ```bash
+   npm install
+   ```
 
-In production, the FastAPI server is hosted as [Python serverless functions](https://vercel.com/docs/concepts/functions/serverless-functions/runtimes/python) on Vercel.
+2. **Set your home coordinate**
 
-## Demo
+   Create `.env.local` in the project root:
+   ```
+   NEXT_PUBLIC_HOME_COORDINATE=51.5054,-0.0235
+   ```
+   Replace with your exact rooftop GPS coords (right-click your roof in Google Maps → Copy coordinates).
 
-https://nextjs-fastapi-starter.vercel.app/
+3. **Python dependencies** are installed automatically on first `npm run dev` via a venv. If that times out (pyarrow is ~26MB), install manually:
+   ```bash
+   python3 -m venv venv
+   source venv/bin/activate
+   pip install -r requirements.txt
+   ```
 
-## Deploy Your Own
+---
 
-You can clone & deploy it to Vercel with one click:
-
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fdigitros%2Fnextjs-fastapi%2Ftree%2Fmain)
-
-## Developing Locally
-
-You can clone & create this repo with the following command
-
-```bash
-npx create-next-app nextjs-fastapi --example "https://github.com/digitros/nextjs-fastapi"
-```
-
-## Getting Started
-
-First, install the dependencies:
-
-```bash
-npm install
-# or
-yarn
-# or
-pnpm install
-```
-
-Then, run the development server:
+## Running locally
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+This starts both servers concurrently:
+- **Next.js** → http://localhost:3000
+- **FastAPI** → http://127.0.0.1:8000
 
-The FastApi server will be running on [http://127.0.0.1:8000](http://127.0.0.1:8000) – feel free to change the port in `package.json` (you'll also need to update it in `next.config.js`).
+Open http://localhost:3000. Flights refresh every 5 seconds.
 
-## Learn More
+---
 
-To learn more about Next.js, take a look at the following resources:
+## How it works
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-- [FastAPI Documentation](https://fastapi.tiangolo.com/) - learn about FastAPI features and API.
+```
+Browser
+  │
+  ├── GET /api/flights  (every 5s)
+  │       └── FastAPI → Flightradar24 protobuf API (London bounding box)
+  │
+  └── React (FlightList.tsx)
+          ├── Filter: destination or origin ∈ {LHR, LCY, LGW, STN}
+          ├── Filter: current position within 5km of home coordinate
+          ├── Sort by distance to home
+          └── Render flight cards with live distance countdown
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+---
+
+## Environment variables
+
+| Variable | Description |
+|---|---|
+| `NEXT_PUBLIC_HOME_COORDINATE` | Your rooftop `lat,lon` — used for distance calculations |
+
+Set in `.env.local` for local dev. Set in the Vercel dashboard for production.
+
+---
+
+## Deploying to Vercel
+
+1. Push repo to GitHub
+2. Import project in Vercel dashboard
+3. Add `NEXT_PUBLIC_HOME_COORDINATE` in Vercel → Settings → Environment Variables
+4. Deploy — Vercel auto-deploys on every push to `main`
