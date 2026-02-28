@@ -27,8 +27,7 @@ interface Flight {
   lat: number;
   lon: number;
   speed: number;
-  isArriving: boolean;
-  isDeparting: boolean;
+  flightType: 'arriving' | 'departing' | 'transit';
   distanceToHome: number;
 }
 
@@ -43,16 +42,22 @@ export default function FlightList() {
         if (flight.lat == null || flight.lon == null) return null;
         const dest = flight.extraInfo?.route?.to;
         const origin = flight.extraInfo?.route?.from;
-        if (!LONDON_AIRPORTS.includes(dest) && !LONDON_AIRPORTS.includes(origin)) return null;
         const location: Point = { x: flight.lon, y: flight.lat };
         const distanceToHome = distanceBetweenPoints(location, home);
         if (distanceToHome > MAX_DISTANCE_KM) return null;
         const isArriving = LONDON_AIRPORTS.includes(dest);
         const isDeparting = LONDON_AIRPORTS.includes(origin) && !isArriving;
-        return { ...flight, isArriving, isDeparting, distanceToHome };
+        const flightType: 'arriving' | 'departing' | 'transit' =
+          isArriving ? 'arriving' : isDeparting ? 'departing' : 'transit';
+        return { ...flight, flightType, distanceToHome };
       })
       .filter((flight: any) => flight !== null)
-      .sort((a: any, b: any) => a.distanceToHome - b.distanceToHome);
+      .sort((a: any, b: any) => {
+        const aIsLondon = a.flightType !== 'transit' ? 0 : 1;
+        const bIsLondon = b.flightType !== 'transit' ? 0 : 1;
+        if (aIsLondon !== bIsLondon) return aIsLondon - bIsLondon;
+        return a.distanceToHome - b.distanceToHome;
+      });
     setLiveFlights(filteredFlights);
   }
 
@@ -67,8 +72,8 @@ export default function FlightList() {
       {liveFlights.map((flight) => (
         <ErrorBoundary key={flight.extraInfo.flight ?? flight.callsign} fallbackRender={({ error }) => <pre>{error.message}</pre>}>
           <Flight
-            airport={getAirport(flight.isArriving ? flight.extraInfo.route.from : flight.extraInfo.route.to)}
-            inbound={flight.isArriving}
+            airport={getAirport(flight.flightType === 'arriving' ? flight.extraInfo.route.from : flight.extraInfo.route.to)}
+            flightType={flight.flightType}
             number={flight.extraInfo.flight}
             plane={getPlane(flight.extraInfo.type)}
             airline={flight.extraInfo.flight ? getAirline(flight.extraInfo.flight) : "Unknown"}
