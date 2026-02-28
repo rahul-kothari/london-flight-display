@@ -50,9 +50,9 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done
 
 ## Phase 3: Local Testing & Tuning
 
-- [ ] **3.1** Run locally (`npm run dev`) and verify flights appear
-- [ ] **3.2** Verify LHR arrivals show when there's inbound traffic (should be near-constant)
-- [ ] **3.3** Verify LCY arrivals/departures show (airport is ~1.5 miles away)
+- [x] **3.1** Run locally (`npm run dev`) and verify flights appear
+- [x] **3.2** Verify LHR arrivals show when there's inbound traffic (should be near-constant)
+- [x] **3.3** Verify LCY arrivals/departures show (airport is ~1.5 miles away)
 - [ ] **3.4** Check STN and LGW — assess if they produce useful results or too much noise
 - [ ] **3.5** Tune approach zone polygons based on what's actually visible from the rooftop
 - [x] **3.6** Update home coordinate once user provides exact GPS coords
@@ -62,7 +62,7 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done
 
 ## Phase 4: Polish
 
-- [ ] **4.1** Update `README.md` — replace boilerplate with actual project description
+- [x] **4.1** Update `README.md` — replace boilerplate with actual project description
 - [ ] **4.2** MVP checkpoint: decide whether to keep or remove the map view
 - [ ] **4.3** Check `fr24` package version — consider upgrading if newer version available on PyPI
 
@@ -70,7 +70,7 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done
 
 ## Phase 5: Vercel Deployment
 
-- [ ] **5.1** Push repo to GitHub (if not already)
+- [x] **5.1** Push repo to GitHub (if not already)
 - [ ] **5.2** Import project in Vercel dashboard
 - [ ] **5.3** Set `NEXT_PUBLIC_HOME_COORDINATE` in Vercel Environment Variables
 - [ ] **5.4** Verify production deployment works end-to-end
