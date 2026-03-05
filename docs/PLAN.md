@@ -54,7 +54,7 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done
 - [x] **3.2** Verify LHR arrivals show when there's inbound traffic (should be near-constant)
 - [x] **3.3** Verify LCY arrivals/departures show (airport is ~1.5 miles away)
 - [x] **3.4** Check STN and LGW — assess if they produce useful results or too much noise
-- [ ] **3.5** Tune approach zone polygons based on what's actually visible from the rooftop
+- [x] **3.5** Tune approach zone polygons based on what's actually visible from the rooftop
 - [x] **3.6** Update home coordinate once user provides exact GPS coords
 - [x] **3.7** Check for unknown airline/aircraft codes in the UI; expand `app/utils/flights.ts` mappings as needed
 
@@ -63,7 +63,7 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done
 ## Phase 4: Polish
 
 - [x] **4.1** Update `README.md` — replace boilerplate with actual project description
-- [ ] **4.2** MVP checkpoint: decide whether to keep or remove the map view
+- [x] **4.2** MVP checkpoint: decide whether to keep or remove the map view — removed in Phase 1 (BoatMap.tsx deleted); leaflet/react-leaflet deps also removed
 - [ ] **4.3** Check `fr24` package version — consider upgrading if newer version available on PyPI
 
 ---
