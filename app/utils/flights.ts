@@ -119,6 +119,7 @@ export interface Airport {
 
 const airports: { [id: string]: Airport } = {
   'ACE': { name: 'Lanzarote', flag: '🇪🇸' },
+  'AGA': { name: 'Agadir', flag: '🇲🇦' },
   'AGP': { name: 'Málaga', flag: '🇪🇸' },
   'ALA': { name: 'Almaty', flag: '🇰🇿' },
   'ALC': { name: 'Alicante', flag: '🇪🇸' },
@@ -143,6 +144,7 @@ const airports: { [id: string]: Airport } = {
   'BIO': { name: 'Bilbao', flag: '🇪🇸' },
   'BLQ': { name: 'Bologna', flag: '🇮🇹' },
   'BOD': { name: 'Bordeaux', flag: '🇫🇷' },
+  'BOM': { name: 'Mumbai', flag: '🇮🇳' },
   'BOS': { name: 'Boston', flag: '🇺🇸' },
   'BRU': { name: 'Brussels', flag: '🇧🇪' },
   'BRS': { name: 'Bristol', flag: '🇬🇧' },
@@ -322,6 +324,7 @@ const airports: { [id: string]: Airport } = {
   'WMI': { name: 'Warsaw Modlin', flag: '🇵🇱' },
   'WRO': { name: 'Wrocław', flag: '🇵🇱' },
   'YUL': { name: 'Montreal', flag: '🇨🇦' },
+  'YYC': { name: 'Calgary', flag: '🇨🇦' },
   'YVR': { name: 'Vancouver', flag: '🇨🇦' },
   'YYZ': { name: 'Toronto', flag: '🇨🇦' },
   'ZAD': { name: 'Zadar', flag: '🇭🇷' },
