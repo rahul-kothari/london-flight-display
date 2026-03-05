@@ -12,7 +12,6 @@ const [homeLat, homeLon] = process.env.NEXT_PUBLIC_HOME_COORDINATE.split(",").ma
 const home: Point = { x: homeLon, y: homeLat };
 
 const LONDON_AIRPORTS = ['LHR', 'LCY', 'LGW', 'STN'];
-const MAX_DISTANCE_KM = 5;
 
 interface Flight {
   callsign: string;
@@ -46,7 +45,7 @@ export default function FlightList() {
   const prevFlightsRef = useRef<Flight[]>([]);
 
   const refreshFlights = useCallback(async () => {
-    const response = await fetch("/api/flights");
+    const response = await fetch(`/api/flights?lat=${homeLat}&lon=${homeLon}`);
     const data = await response.json();
     const filteredFlights: Flight[] = (data.flights_list ?? [])
       .map((flight: any) => {
@@ -55,7 +54,6 @@ export default function FlightList() {
         const origin = flight.extra_info?.route?.from;
         const location: Point = { x: flight.lon, y: flight.lat };
         const distanceToHome = distanceBetweenPoints(location, home);
-        if (distanceToHome > MAX_DISTANCE_KM) return null;
         const isArriving = LONDON_AIRPORTS.includes(dest);
         const isDeparting = LONDON_AIRPORTS.includes(origin) && !isArriving;
         const flightType: 'arriving' | 'departing' | 'transit' =
