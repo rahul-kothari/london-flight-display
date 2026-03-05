@@ -53,7 +53,7 @@ export default function FlightList() {
         const dest = flight.extra_info?.route?.to;
         const origin = flight.extra_info?.route?.from;
         const location: Point = { x: flight.lon, y: flight.lat };
-        const distanceToHome = distanceBetweenPoints(location, home);
+        const distanceToHome = distanceBetweenPoints(location, home); // display and sort only — backend filters by radius
         const isArriving = LONDON_AIRPORTS.includes(dest);
         const isDeparting = LONDON_AIRPORTS.includes(origin) && !isArriving;
         const flightType: 'arriving' | 'departing' | 'transit' =
@@ -77,7 +77,7 @@ export default function FlightList() {
     refreshFlights();
     const flightInterval = setInterval(refreshFlights, 5000);
     return () => clearInterval(flightInterval);
-  }, []);
+  }, [refreshFlights]);
 
   return (
     <div>
