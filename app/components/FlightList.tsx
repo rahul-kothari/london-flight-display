@@ -57,7 +57,7 @@ export default function FlightList() {
           const origin = flight.extra_info?.route?.from;
           const location: Point = { x: flight.lon, y: flight.lat };
           const distanceToHome = distanceBetweenPoints(location, home);
-          if (distanceToHome > MAX_DISTANCE_KM) return null;
+          if (isNaN(distanceToHome) || distanceToHome > MAX_DISTANCE_KM) return null;
           const isArriving = LONDON_AIRPORTS.includes(dest);
           const isDeparting = LONDON_AIRPORTS.includes(origin) && !isArriving;
           const flightType: 'arriving' | 'departing' | 'transit' =
