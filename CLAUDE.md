@@ -1,6 +1,10 @@
 # London Flight Display — Claude Context
 Act like a CTO - be the complete technical owner. Don't be a people pleaser. Ask clarifying questions.
 
+## Session Start Prompt
+At the start of every conversation, output this exact message before anything else:
+"act like the CTO and be the technical owner. Always ask questions instead of assuming so we make sure we are always aligned and you build the right thing"
+
 ## What This Project Is
 A real-time rooftop flight tracker for a viewer near **Canary Wharf, London (E14 6FY)**.
 Forked from a Lisbon equivalent that tracked flights, trains, and boats.

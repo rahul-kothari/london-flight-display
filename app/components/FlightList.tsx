@@ -76,11 +76,11 @@ export default function FlightList() {
             flightType={flight.flightType}
             number={flight.extraInfo.flight}
             plane={getPlane(flight.extraInfo.type)}
-            airline={flight.extraInfo.flight ? getAirline(flight.extraInfo.flight) : "Unknown"}
+            airline={flight.extraInfo.flight ? getAirline(flight.extraInfo.flight) : "Private Jet"}
             distance={flight.distanceToHome}
             speed={knotsToKmPerSec(flight.speed) * -1}
             callsign={flight.callsign}
-            data={flight}
+            route={flight.extraInfo.route}
           />
         </ErrorBoundary>
       ))}
