@@ -29,14 +29,9 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done
   north=51.80, west=-0.70, south=51.20, east=0.35
   ```
 
-- [x] **2.2** Update `app/components/FlightList.tsx` — replaced Lisbon polygons with 8 London zones:
-  - LHR arrivals, LHR departures
-  - LCY arrivals, LCY departures
-  - LGW arrivals, LGW departures
-  - STN arrivals, STN departures
-  - Coordinates sourced from `docs/EDD.md`
+- [x] **2.2** Update `app/components/FlightList.tsx` — replaced Lisbon polygons with 5km radius filter from home coordinate. `LONDON_AIRPORTS = ['LHR', 'LCY', 'LGW', 'STN']` classifies `flightType` as arriving/departing/transit for display — it is not a filter.
 
-- [x] **2.3** Update `app/components/FlightList.tsx` — airport filter changed to `['LHR', 'LCY', 'LGW', 'STN']`
+- [x] **2.3** ~~airport filter~~ (no longer a separate stage — see 2.2)
 
 - [x] **2.4** Create `.env.local` with placeholder home coordinate:
   ```
@@ -107,7 +102,8 @@ FlightList.tsx → logFlights() → IndexedDB (dedup by flightNumber + date)
 **Display rule:** Grouped stats (by airline, airport, aircraft type) only show entries with >2 occurrences.
 
 **Tasks:**
-- [ ] **6.1** Create `app/utils/flightStore.ts` — IndexedDB open/upgrade, `logFlights()` (idempotent dedup), `getStats()` (aggregated), `getAllSightings()` (raw). Raw IndexedDB API, no library.
+- [ ] **6.1** Create `app/utils/flightStore.ts` — IndexedDB open/upgrade, `logFlights()` (idempotent dedup), `getStats()` (aggregated), `getAllSightings()` (raw), `getUnknownAirports()` (see 6.1a). Raw IndexedDB API, no library.
+  - [ ] **6.1a** Track unknown airports: whenever `getAirport()` returns the `Abroad (XYZ)` fallback (i.e. no entry in `flights.ts`), record the raw IATA code in an `unknown_airports` store (key: IATA code, value: `{ code, seenCount, lastSeen }`). Expose via `getUnknownAirports()` returning codes sorted by `seenCount` desc — so we can periodically review and add the most-seen missing codes to `flights.ts`.
 - [ ] **6.2** Hook into `FlightList.tsx` — call `logFlights(filteredFlights)` after filtering in `refreshFlights()`
 - [ ] **6.3** Create `app/components/StatsSummary.tsx` — collapsible panel on main page: today's flight count, top 3 airlines, airport split (only entries >2)
 - [ ] **6.4** Create `app/stats/page.tsx` — dedicated route with date picker, flights per day (CSS bar chart), tables for airline/airport/aircraft breakdowns (entries >2 only)
@@ -147,6 +143,5 @@ Replace the hardcoded ~100-airport map in `app/utils/flights.ts` with the full O
 
 ## Notes
 
-- **Approach polygons:** Starting coordinates in EDD are approximate. Expect to iterate on these after Phase 3 testing.
-- **STN/LGW visibility:** From E14, these may produce few or no visible flights. Keep in filter for now; remove if they only generate noise after testing.
+- **STN/LGW visibility:** From E14, these may produce few or no visible flights. They still appear if within 5km radius — LONDON_AIRPORTS classification is purely cosmetic.
 - **FR24 reliability:** The `fr24` package is undocumented. If it stops working, check PyPI for updates or alternatives.

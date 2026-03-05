@@ -21,19 +21,16 @@ Forked from a Lisbon equivalent that tracked flights, trains, and boats.
 - **Backend:** FastAPI (Python) served at `/api/*`
 - **Glue:** `next.config.js` rewrites `/api/*` → FastAPI on port 8000 locally; Vercel serverless in prod
 - **Flight data:** `fr24==0.2.4` Python package — hits Flightradar24's undocumented protobuf API. **Free, no key required.** Could break if FR24 changes internals.
-- **Maps:** Leaflet + OpenStreetMap tiles (free)
 
 ## Key Files
 | File | Role |
 |---|---|
 | `api/index.py` | FastAPI app — `/api/flights` endpoint, London bounding box query |
-| `app/components/FlightList.tsx` | Fetches flights, filters by airport + 5km radius from home, sorts by distance |
+| `app/components/FlightList.tsx` | Fetches flights, filters to 5km radius from home, classifies arriving/departing/transit, sorts by distance |
 | `app/components/Flight.tsx` | Renders a single flight card |
-| `app/components/Settings.tsx` | Sleep Lock toggle (keeps screen awake) |
 | `app/utils/flights.ts` | Airline, aircraft type, airport name lookup maps |
 | `app/utils/geo.ts` | Haversine distance, knots→km/s. Point uses `x=lon, y=lat`. |
-| `app/utils/time.ts` | Time formatting helpers |
-| `app/page.tsx` | Root page, composes FlightList + Settings |
+| `app/page.tsx` | Root page, renders FlightList |
 | `next.config.js` | API rewrite rules |
 | `vercel.json` | Vercel Python serverless config |
 
@@ -65,9 +62,10 @@ npm run dev
 `npm run dev` runs both concurrently via `concurrently`. The fastapi-dev script auto-creates the venv and pip-installs, but on first run it can timeout on the pyarrow download — run step 2 manually if that happens.
 
 ## Flight Filtering Logic
-Two-stage filter in `FlightList.tsx`:
-1. **Airport filter** — destination or origin must be `LHR`, `LCY`, `LGW`, or `STN`
-2. **Radius filter** — flight's current position must be within **5km** of `NEXT_PUBLIC_HOME_COORDINATE`
+Single filter in `FlightList.tsx`:
+- **Radius filter** — flight's current position must be within **5km** of `NEXT_PUBLIC_HOME_COORDINATE`. All flights in range are shown regardless of route.
+
+`LONDON_AIRPORTS = ['LHR', 'LCY', 'LGW', 'STN']` is **not a filter** — it only classifies `flightType` as `'arriving'`, `'departing'`, or `'transit'` for display purposes.
 
 The FR24 bounding box in `api/index.py` is intentionally London-wide (not home-centered) so approaching flights are fetched before they enter the 5km zone.
 
@@ -79,15 +77,23 @@ const home: Point = { x: homeLon, y: homeLat };
 ```
 
 ## Current Status
-See `docs/PLAN.md` for full task tracking. Phases 1 and 2 are complete. Currently on Phase 3 (local testing).
+See `docs/PLAN.md` for full task tracking. Phases 1–4 complete. Phase 5 (Vercel deployment) in progress. Phase 6 (flight stats) and Phase 7 (OurAirports dataset) are next.
 
 ## Decisions Made
 - **Airports:** LHR, LCY, STN, LGW — all included
 - **Flight types:** Both arrivals AND departures
-- **Filtering:** 5km radius from home (not polygon approach zones — too complex, too broad)
-- **Sleep Lock:** Keep the toggle (useful for always-on tablet display)
-- **Map view:** Keep for MVP, revisit later
+- **Filtering:** 5km radius from home only — no airport filter. All flights in range are shown.
+- **Sleep Lock:** Removed
+- **Map view:** Removed
 - **Hosting:** Vercel free tier when ready
+
+## Keeping Docs in Sync
+When any code change alters behaviour, architecture, or decisions — update these files before closing the task:
+- `CLAUDE.md` — architecture, key files, filtering logic, decisions
+- `README.md` — how it works diagram, description
+- `docs/PLAN.md` — task status and notes
+
+If a user prompt changes the design (e.g. removes a feature, changes filtering logic, adds a new component), treat doc updates as part of the same task, not optional follow-up.
 
 ## After Every Code Change — Required Verification
 Run these three commands and confirm they all pass before declaring the change done:
@@ -101,7 +107,6 @@ Do NOT claim a change is correct unless all three pass.
 ## Testing Conventions
 - Test files live alongside source: `app/utils/geo.test.ts`, `app/components/Flight.test.tsx`
 - Use Vitest (`describe`, `it`, `expect`) — not Jest globals
-- Mock external deps (leaflet, react-leaflet) at the file level with `vi.mock`
 - Mock browser APIs unavailable in jsdom (e.g. `requestAnimationFrame`) with `vi.stubGlobal`
 
 ## Notes for Future Sessions

@@ -1,6 +1,6 @@
 # London Flight Tracker
 
-Real-time flight tracker for a rooftop in Canary Wharf, London. Shows flights arriving and departing from LHR, LCY, LGW, and STN that are currently within 5km of your home coordinate.
+Real-time flight tracker for a rooftop in Canary Wharf, London. Shows all flights currently within 5km of your home coordinate, classified as arriving/departing/transit based on LHR, LCY, LGW, and STN routes.
 
 **Stack:** Next.js 13 + React 18 + TypeScript + Tailwind + FastAPI (Python) + Flightradar24 (no API key required)
 
@@ -61,8 +61,8 @@ Browser
   │       └── FastAPI → Flightradar24 protobuf API (London bounding box)
   │
   └── React (FlightList.tsx)
-          ├── Filter: destination or origin ∈ {LHR, LCY, LGW, STN}
           ├── Filter: current position within 5km of home coordinate
+          ├── Classify: arriving/departing/transit based on LHR, LCY, LGW, STN routes
           ├── Sort by distance to home
           └── Render flight cards with live distance countdown
 ```
