@@ -1,25 +1,15 @@
-import httpx
 from fastapi import FastAPI
-from fr24.livefeed import (
-    livefeed_message_create,
-    livefeed_post,
-    livefeed_request_create,
-    livefeed_response_parse,
-)
-from fr24.proto.request_pb2 import LiveFeedResponse
-from google.protobuf.json_format import MessageToDict
+from fr24 import FR24, BoundingBox
 
 app = FastAPI()
 
-async def flight_data() -> LiveFeedResponse:
-    async with httpx.AsyncClient() as client:
-        message = livefeed_message_create(north=51.80, west=-0.70, south=51.20, east=0.35)
-        request = livefeed_request_create(message)
-        data = await livefeed_post(client, request)
-        return livefeed_response_parse(data)
+LONDON_BBOX = BoundingBox(north=51.80, south=51.20, west=-0.70, east=0.35)
+
+async def flight_data() -> dict:
+    async with FR24() as fr24:
+        result = await fr24.live_feed.fetch(LONDON_BBOX)
+        return result.to_dict()
 
 @app.get("/api/flights")
 async def get_data():
-    data = await flight_data()
-    data_dict = MessageToDict(data)
-    return data_dict
+    return await flight_data()

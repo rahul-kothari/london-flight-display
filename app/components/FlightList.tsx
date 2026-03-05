@@ -16,7 +16,7 @@ const MAX_DISTANCE_KM = 5;
 
 interface Flight {
   callsign: string;
-  extraInfo: {
+  extra_info: {
     flight?: string;
     type: string;
     route: {
@@ -37,11 +37,11 @@ export default function FlightList() {
   const refreshFlights = async () => {
     const response = await fetch("/api/flights");
     const data = await response.json();
-    const filteredFlights = (data.flightsList ?? [])
+    const filteredFlights = (data.flights_list ?? [])
       .map((flight: any) => {
         if (flight.lat == null || flight.lon == null) return null;
-        const dest = flight.extraInfo?.route?.to;
-        const origin = flight.extraInfo?.route?.from;
+        const dest = flight.extra_info?.route?.to;
+        const origin = flight.extra_info?.route?.from;
         const location: Point = { x: flight.lon, y: flight.lat };
         const distanceToHome = distanceBetweenPoints(location, home);
         if (distanceToHome > MAX_DISTANCE_KM) return null;
@@ -70,17 +70,17 @@ export default function FlightList() {
   return (
     <div>
       {liveFlights.map((flight) => (
-        <ErrorBoundary key={flight.extraInfo.flight ?? flight.callsign} fallbackRender={({ error }) => <pre>{error.message}</pre>}>
+        <ErrorBoundary key={flight.extra_info.flight ?? flight.callsign} fallbackRender={({ error }) => <pre>{error.message}</pre>}>
           <Flight
-            airport={getAirport(flight.flightType === 'arriving' ? flight.extraInfo.route?.from : flight.extraInfo.route?.to)}
+            airport={getAirport(flight.flightType === 'arriving' ? flight.extra_info.route?.from : flight.extra_info.route?.to)}
             flightType={flight.flightType}
-            number={flight.extraInfo.flight}
-            plane={getPlane(flight.extraInfo.type)}
-            airline={flight.extraInfo.flight ? getAirline(flight.extraInfo.flight) : "Private Jet"}
+            number={flight.extra_info.flight}
+            plane={getPlane(flight.extra_info.type)}
+            airline={flight.extra_info.flight ? getAirline(flight.extra_info.flight) : "Private Jet"}
             distance={flight.distanceToHome}
             speed={knotsToKmPerSec(flight.speed) * -1}
             callsign={flight.callsign}
-            route={flight.extraInfo.route}
+            route={flight.extra_info.route}
           />
         </ErrorBoundary>
       ))}

@@ -20,7 +20,7 @@ Forked from a Lisbon equivalent that tracked flights, trains, and boats.
 - **Frontend:** Next.js 13 + React 18 + TypeScript + Tailwind CSS
 - **Backend:** FastAPI (Python) served at `/api/*`
 - **Glue:** `next.config.js` rewrites `/api/*` → FastAPI on port 8000 locally; Vercel serverless in prod
-- **Flight data:** `fr24==0.1.2` Python package — hits Flightradar24's undocumented protobuf API. **Free, no key required.** Could break if FR24 changes internals.
+- **Flight data:** `fr24==0.2.4` Python package — hits Flightradar24's undocumented protobuf API. **Free, no key required.** Could break if FR24 changes internals.
 - **Maps:** Leaflet + OpenStreetMap tiles (free)
 
 ## Key Files
