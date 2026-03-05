@@ -1,5 +1,5 @@
 "use client"
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { Point, distanceBetweenPoints, knotsToKmPerSec } from "../utils/geo";
 import { getAirline, getAirport, getPlane } from "../utils/flights";
@@ -31,13 +31,24 @@ interface Flight {
   distanceToHome: number;
 }
 
+function flightsChanged(prev: Flight[], next: Flight[]): boolean {
+  if (prev.length !== next.length) return true;
+  for (let i = 0; i < prev.length; i++) {
+    const p = prev[i], n = next[i];
+    if (p.callsign !== n.callsign || p.flightType !== n.flightType) return true;
+    if (Math.abs(p.distanceToHome - n.distanceToHome) > 0.05) return true;
+  }
+  return false;
+}
+
 export default function FlightList() {
   const [liveFlights, setLiveFlights] = useState<Flight[]>([]);
+  const prevFlightsRef = useRef<Flight[]>([]);
 
-  const refreshFlights = async () => {
+  const refreshFlights = useCallback(async () => {
     const response = await fetch("/api/flights");
     const data = await response.json();
-    const filteredFlights = (data.flights_list ?? [])
+    const filteredFlights: Flight[] = (data.flights_list ?? [])
       .map((flight: any) => {
         if (flight.lat == null || flight.lon == null) return null;
         const dest = flight.extra_info?.route?.to;
@@ -51,15 +62,18 @@ export default function FlightList() {
           isArriving ? 'arriving' : isDeparting ? 'departing' : 'transit';
         return { ...flight, flightType, distanceToHome };
       })
-      .filter((flight: any) => flight !== null)
-      .sort((a: any, b: any) => {
+      .filter((flight: any): flight is Flight => flight !== null)
+      .sort((a: Flight, b: Flight) => {
         const aIsLondon = a.flightType !== 'transit' ? 0 : 1;
         const bIsLondon = b.flightType !== 'transit' ? 0 : 1;
         if (aIsLondon !== bIsLondon) return aIsLondon - bIsLondon;
         return a.distanceToHome - b.distanceToHome;
       });
-    setLiveFlights(filteredFlights);
-  }
+    if (flightsChanged(prevFlightsRef.current, filteredFlights)) {
+      prevFlightsRef.current = filteredFlights;
+      setLiveFlights(filteredFlights);
+    }
+  }, []);
 
   useEffect(() => {
     refreshFlights();

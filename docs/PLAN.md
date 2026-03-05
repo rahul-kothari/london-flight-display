@@ -78,18 +78,66 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done
 
 ---
 
-## Phase 6: OurAirports Dataset (Issue #1)
+## Phase 6: Flight Stats (IndexedDB)
+
+Track unique flights seen and display stats. Client-side storage (IndexedDB) — zero infrastructure, zero cost. Turso migration path available for later.
+
+**Architecture:**
+```
+FlightList.tsx → logFlights() → IndexedDB (dedup by flightNumber + date)
+                                    ↓
+                        StatsSummary (main page, collapsible)
+                        StatsPage (/stats route, detailed)
+```
+
+**IndexedDB schema:** `flight-stats` DB, `sightings` store
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | string (PK) | `{flightNumber}_{YYYY-MM-DD}` (dedup key) |
+| `flightNumber` | string | e.g. "BA123" |
+| `callsign` | string | e.g. "BAW123" |
+| `airline` | string | 2-letter code from flight number |
+| `aircraftType` | string | e.g. "A320" |
+| `origin` | string | Airport code |
+| `destination` | string | Airport code |
+| `flightType` | string | "arriving" / "departing" / "transit" |
+| `date` | string | "YYYY-MM-DD" (indexed) |
+| `firstSeen` | number | Unix timestamp |
+
+**Display rule:** Grouped stats (by airline, airport, aircraft type) only show entries with >2 occurrences.
+
+**Tasks:**
+- [ ] **6.1** Create `app/utils/flightStore.ts` — IndexedDB open/upgrade, `logFlights()` (idempotent dedup), `getStats()` (aggregated), `getAllSightings()` (raw). Raw IndexedDB API, no library.
+- [ ] **6.2** Hook into `FlightList.tsx` — call `logFlights(filteredFlights)` after filtering in `refreshFlights()`
+- [ ] **6.3** Create `app/components/StatsSummary.tsx` — collapsible panel on main page: today's flight count, top 3 airlines, airport split (only entries >2)
+- [ ] **6.4** Create `app/stats/page.tsx` — dedicated route with date picker, flights per day (CSS bar chart), tables for airline/airport/aircraft breakdowns (entries >2 only)
+- [ ] **6.5** Add `<StatsSummary />` to `app/page.tsx` + link to `/stats`
+- [ ] **6.6** Add `fake-indexeddb` dev dep, create `app/utils/flightStore.test.ts` + `app/components/StatsSummary.test.tsx`
+- [ ] **6.7** Verify: `npx tsc --noEmit`, `npm run lint`, `npm test` all pass
+- [ ] **6.8** Optimise - reduce RAM usage etc.
+
+**Future: Turso migration** (after hosting is live)
+1. Create free Turso account + database
+2. Install `@libsql/client` (~15KB)
+3. Add `POST /api/log-flight` and `GET /api/stats` endpoints
+4. Swap `flightStore.ts` from IndexedDB to API fetch calls (same `getStats()` interface — stats components unchanged)
+5. Env vars: `TURSO_DATABASE_URL` + `TURSO_AUTH_TOKEN` in Vercel
+6. Optional: one-time migration script to export IndexedDB → Turso
+
+---
+
+## Phase 7: OurAirports Dataset (Issue #1)
 
 Replace the hardcoded ~100-airport map in `app/utils/flights.ts` with the full OurAirports dataset (~9k IATA airports). Fixes missing names/flags for intercontinental and smaller European routes.
 
-- [ ] **6.1** Download `https://ourairports.com/data/airports.csv` and filter to rows with a non-empty `iata_code` (~9k rows)
-- [ ] **6.2** Write a build script (`scripts/build-airport-data.ts`) that outputs `app/utils/airport-data.json`: `{ [iata]: { name: string, iso_country: string } }`
-- [ ] **6.3** Add `countryToFlag()` helper in `flights.ts` that converts ISO 2-letter country code to flag emoji at runtime (no lookup table needed)
-- [ ] **6.4** Rewrite `getAirport()` in `flights.ts` to use `airport-data.json` — preserve `useCode: true` for London-area airports (LHR, LCY, LGW, STN, LTN, SEN, FAB, NHT, BQH)
-- [ ] **6.5** Delete the hardcoded `airports` map from `flights.ts`
-- [ ] **6.6** Update `getAirportName()` and `getAirline()` — verify no regressions
-- [ ] **6.7** Evaluate bundle impact: if JSON >300KB uncompressed, consider moving to `getStaticProps` so it stays server-side only
-- [ ] **6.8** Update tests in `app/utils/flights.test.ts` to cover the new lookup path and the `countryToFlag` helper
+- [ ] **7.1** Download `https://ourairports.com/data/airports.csv` and filter to rows with a non-empty `iata_code` (~9k rows)
+- [ ] **7.2** Write a build script (`scripts/build-airport-data.ts`) that outputs `app/utils/airport-data.json`: `{ [iata]: { name: string, iso_country: string } }`
+- [ ] **7.3** Add `countryToFlag()` helper in `flights.ts` that converts ISO 2-letter country code to flag emoji at runtime (no lookup table needed)
+- [ ] **7.4** Rewrite `getAirport()` in `flights.ts` to use `airport-data.json` — preserve `useCode: true` for London-area airports (LHR, LCY, LGW, STN, LTN, SEN, FAB, NHT, BQH)
+- [ ] **7.5** Delete the hardcoded `airports` map from `flights.ts`
+- [ ] **7.6** Update `getAirportName()` and `getAirline()` — verify no regressions
+- [ ] **7.7** Evaluate bundle impact: if JSON >300KB uncompressed, consider moving to `getStaticProps` so it stays server-side only
+- [ ] **7.8** Update tests in `app/utils/flights.test.ts` to cover the new lookup path and the `countryToFlag` helper
 
 **Trade-offs to decide before starting:**
 - Bundle the JSON in the client (simple, works on Vercel Edge) vs. fetch at build time via `getStaticProps` (keeps client bundle smaller)

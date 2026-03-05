@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { Airport, getAirport, getAirportName } from "../utils/flights";
 import { Counter } from "./Counter";
 
@@ -13,7 +14,7 @@ interface FlightProps {
   route?: { from: string; to: string };
 }
 
-export default function Flight({ airport, flightType, number, plane, airline, distance, speed, callsign, route }: FlightProps) {
+export default memo(function Flight({ airport, flightType, number, plane, airline, distance, speed, callsign, route }: FlightProps) {
   return (
     <div className="grid grid-cols-2 md:grid-cols-[80px_100px_2fr_1fr_190px] bg-gray-800 text-white p-4 rounded-lg shadow-lg gap-4 md:gap-0 m-4">
       <div className="text-6xl md:row-span-2 flex items-center">
@@ -41,4 +42,4 @@ export default function Flight({ airport, flightType, number, plane, airline, di
 
     </div>
   );
-}
+})
