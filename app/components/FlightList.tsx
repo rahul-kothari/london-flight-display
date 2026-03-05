@@ -11,7 +11,6 @@ const home: Point | null = _homeCoord
   : null;
 
 const LONDON_AIRPORTS = ['LHR', 'LCY', 'LGW', 'STN'];
-const MAX_DISTANCE_KM = 5;
 
 interface Flight {
   callsign: string;
@@ -47,7 +46,7 @@ export default function FlightList() {
   const refreshFlights = useCallback(async () => {
     if (!home) return;
     try {
-      const response = await fetch("/api/flights");
+      const response = await fetch(`/api/flights?lat=${home.y}&lon=${home.x}`);
       if (!response.ok) return;
       const data = await response.json();
       const filteredFlights: Flight[] = (data.flights_list ?? [])
@@ -56,8 +55,7 @@ export default function FlightList() {
           const dest = flight.extra_info?.route?.to;
           const origin = flight.extra_info?.route?.from;
           const location: Point = { x: flight.lon, y: flight.lat };
-          const distanceToHome = distanceBetweenPoints(location, home);
-          if (isNaN(distanceToHome) || distanceToHome > MAX_DISTANCE_KM) return null;
+          const distanceToHome = distanceBetweenPoints(location, home); // display and sort only — backend filters by radius
           const isArriving = LONDON_AIRPORTS.includes(dest);
           const isDeparting = LONDON_AIRPORTS.includes(origin) && !isArriving;
           const flightType: 'arriving' | 'departing' | 'transit' =
@@ -84,7 +82,7 @@ export default function FlightList() {
     refreshFlights();
     const flightInterval = setInterval(refreshFlights, 5000);
     return () => clearInterval(flightInterval);
-  }, []);
+  }, [refreshFlights]);
 
   if (!home) return (
     <div className="p-8 text-red-500">
