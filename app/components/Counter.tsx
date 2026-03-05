@@ -4,27 +4,20 @@ import { useEffect, useRef } from "react";
 interface CounterProps {
   value: number;
   speed?: number;
-  minutes?: boolean;
 }
 
-function formatTime(val: number) {
-  const seconds = Math.abs(Math.floor(val % 1 * 60));
-  return `${Math.floor(val)}:${seconds < 10 ? '0' : ''}${seconds}`;
-}
-
-export function Counter({ value, speed, minutes }: CounterProps) {
+export function Counter({ value, speed }: CounterProps) {
   const ref = useRef<HTMLSpanElement>(null);
   const currentVal = useRef(value);
   const startTime = useRef(Date.now());
   const animationRef = useRef<number>();
 
-  const _speed = minutes ? -1 / 60 : speed;
-  const formatValue = minutes ? (val: number) => formatTime(val) : (val: number) => val.toFixed(2);
+  const formatValue = (val: number) => val.toFixed(2);
 
   const calculate = () => {
     const now = Date.now();
     const elapsedTime = now - startTime.current;
-    const delta = elapsedTime / 1000 * _speed!;
+    const delta = elapsedTime / 1000 * (speed ?? 0);
     currentVal.current = value + delta;
 
     if (ref.current) {
