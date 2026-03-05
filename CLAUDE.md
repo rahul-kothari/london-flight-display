@@ -89,6 +89,21 @@ See `docs/PLAN.md` for full task tracking. Phases 1 and 2 are complete. Currentl
 - **Map view:** Keep for MVP, revisit later
 - **Hosting:** Vercel free tier when ready
 
+## After Every Code Change — Required Verification
+Run these three commands and confirm they all pass before declaring the change done:
+
+1. `npx tsc --noEmit`    — catches TypeScript type errors
+2. `npm run lint`         — catches ESLint issues
+3. `npm test`             — runs the Vitest unit + component suite
+
+Do NOT claim a change is correct unless all three pass.
+
+## Testing Conventions
+- Test files live alongside source: `app/utils/geo.test.ts`, `app/components/Flight.test.tsx`
+- Use Vitest (`describe`, `it`, `expect`) — not Jest globals
+- Mock external deps (leaflet, react-leaflet) at the file level with `vi.mock`
+- Mock browser APIs unavailable in jsdom (e.g. `requestAnimationFrame`) with `vi.stubGlobal`
+
 ## Notes for Future Sessions
 - The `fr24` package is undocumented/reverse-engineered — if it breaks, check PyPI for updates or look at `flightradar24` as an alternative
 - `pyarrow` (a `fr24` dependency) is 26MB and can timeout on first pip install — always install Python deps manually before running if setting up fresh
