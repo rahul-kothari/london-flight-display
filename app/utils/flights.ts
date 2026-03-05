@@ -333,4 +333,4 @@ const airports: { [id: string]: Airport } = {
   'ZRH': { name: 'Zurich', flag: '🇨🇭' },
 };
 
-export const getAirport = (airport: string) => airports[airport] || { name: 'Abroad', flag: '🌍' };
+export const getAirport = (airport: string) => airports[airport] || { name: `Abroad (${airport})`, flag: '🌍' };

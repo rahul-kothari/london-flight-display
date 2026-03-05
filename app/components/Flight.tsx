@@ -22,7 +22,7 @@ export default function Flight({ airport, flightType, number, plane, airline, di
       <div className="text-2xl font-medium text-center md:row-span-2 flex items-center">{number || '-'}</div>
       <div className="text-3xl col-span-2 md:col-span-1 md:text-5xl font-bold md:row-span-2 flex items-center">
         <a href={`https://www.flightradar24.com/${callsign}`} target="_blank" rel="noreferrer">
-          {flightType === 'transit' && route ? (
+          {route ? (
             <>
               {getAirport(route.from).flag} {getAirport(route.from).name}
               {' → '}
