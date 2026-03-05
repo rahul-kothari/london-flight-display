@@ -8,11 +8,14 @@ export default function Settings() {
 
   const setSleepLock = async (value: boolean) => {
     if (value) {
-      wakeLock.current = await navigator.wakeLock.request("screen");
+      try {
+        wakeLock.current = await navigator.wakeLock.request("screen");
+      } catch {
+        // Wake Lock not supported or denied — continue without it
+      }
     } else {
       wakeLock.current?.release();
     }
-
     _setSleepLock(value);
   };
 
