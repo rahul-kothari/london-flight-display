@@ -5,11 +5,10 @@ import { Point, distanceBetweenPoints, knotsToKmPerSec } from "../utils/geo";
 import { getAirline, getAirport, getPlane } from "../utils/flights";
 import Flight from "./Flight";
 
-if (!process.env.NEXT_PUBLIC_HOME_COORDINATE) {
-  throw new Error("Missing NEXT_PUBLIC_HOME_COORDINATE");
-}
-const [homeLat, homeLon] = process.env.NEXT_PUBLIC_HOME_COORDINATE.split(",").map(Number);
-const home: Point = { x: homeLon, y: homeLat };
+const _homeCoord = process.env.NEXT_PUBLIC_HOME_COORDINATE;
+const home: Point | null = _homeCoord
+  ? { x: +_homeCoord.split(",")[1], y: +_homeCoord.split(",")[0] }
+  : null;
 
 const LONDON_AIRPORTS = ['LHR', 'LCY', 'LGW', 'STN'];
 const MAX_DISTANCE_KM = 5;
@@ -46,6 +45,7 @@ export default function FlightList() {
   const prevFlightsRef = useRef<Flight[]>([]);
 
   const refreshFlights = useCallback(async () => {
+    if (!home) return;
     try {
       const response = await fetch("/api/flights");
       if (!response.ok) return;
@@ -86,6 +86,12 @@ export default function FlightList() {
     return () => clearInterval(flightInterval);
   }, []);
 
+  if (!home) return (
+    <div className="p-8 text-red-500">
+      Missing NEXT_PUBLIC_HOME_COORDINATE — set this environment variable in your Vercel dashboard.
+    </div>
+  );
+
   return (
     <div>
       {liveFlights.map((flight) => (
@@ -97,7 +103,7 @@ export default function FlightList() {
             plane={getPlane(flight.extra_info.type)}
             airline={flight.extra_info.flight ? getAirline(flight.extra_info.flight) : "Private Jet"}
             distance={flight.distanceToHome}
-            speed={knotsToKmPerSec(flight.speed) * -1}
+            speed={knotsToKmPerSec(flight.speed ?? 0) * -1}
             callsign={flight.callsign}
             route={flight.extra_info.route}
           />
