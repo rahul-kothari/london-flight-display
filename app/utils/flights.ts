@@ -140,6 +140,7 @@ const airports: { [id: string]: Airport } = {
   'BRN': { name: 'Bern', flag: '🇨🇭' },
   'BTS': { name: 'Bratislava', flag: '🇸🇰' },
   'BFS': { name: 'Belfast', flag: '🇬🇧' },
+  'BHD': { name: 'Belfast City', flag: '🇬🇧' },
   'BGY': { name: 'Milan Bergamo', flag: '🇮🇹' },
   'BHX': { name: 'Birmingham', flag: '🇬🇧' },
   'BIO': { name: 'Bilbao', flag: '🇪🇸' },
