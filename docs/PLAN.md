@@ -53,10 +53,10 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done
 - [x] **3.1** Run locally (`npm run dev`) and verify flights appear
 - [x] **3.2** Verify LHR arrivals show when there's inbound traffic (should be near-constant)
 - [x] **3.3** Verify LCY arrivals/departures show (airport is ~1.5 miles away)
-- [ ] **3.4** Check STN and LGW — assess if they produce useful results or too much noise
+- [x] **3.4** Check STN and LGW — assess if they produce useful results or too much noise
 - [ ] **3.5** Tune approach zone polygons based on what's actually visible from the rooftop
 - [x] **3.6** Update home coordinate once user provides exact GPS coords
-- [ ] **3.7** Check for unknown airline/aircraft codes in the UI; expand `app/utils/flights.ts` mappings as needed
+- [x] **3.7** Check for unknown airline/aircraft codes in the UI; expand `app/utils/flights.ts` mappings as needed
 
 ---
 
@@ -78,9 +78,27 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done
 
 ---
 
+## Phase 6: OurAirports Dataset (Issue #1)
+
+Replace the hardcoded ~100-airport map in `app/utils/flights.ts` with the full OurAirports dataset (~9k IATA airports). Fixes missing names/flags for intercontinental and smaller European routes.
+
+- [ ] **6.1** Download `https://ourairports.com/data/airports.csv` and filter to rows with a non-empty `iata_code` (~9k rows)
+- [ ] **6.2** Write a build script (`scripts/build-airport-data.ts`) that outputs `app/utils/airport-data.json`: `{ [iata]: { name: string, iso_country: string } }`
+- [ ] **6.3** Add `countryToFlag()` helper in `flights.ts` that converts ISO 2-letter country code to flag emoji at runtime (no lookup table needed)
+- [ ] **6.4** Rewrite `getAirport()` in `flights.ts` to use `airport-data.json` — preserve `useCode: true` for London-area airports (LHR, LCY, LGW, STN, LTN, SEN, FAB, NHT, BQH)
+- [ ] **6.5** Delete the hardcoded `airports` map from `flights.ts`
+- [ ] **6.6** Update `getAirportName()` and `getAirline()` — verify no regressions
+- [ ] **6.7** Evaluate bundle impact: if JSON >300KB uncompressed, consider moving to `getStaticProps` so it stays server-side only
+- [ ] **6.8** Update tests in `app/utils/flights.test.ts` to cover the new lookup path and the `countryToFlag` helper
+
+**Trade-offs to decide before starting:**
+- Bundle the JSON in the client (simple, works on Vercel Edge) vs. fetch at build time via `getStaticProps` (keeps client bundle smaller)
+- Whether to commit `airport-data.json` to the repo or generate it at build time via a `prebuild` script
+
+---
+
 ## Notes
 
-- **Coordinate placeholder:** `51.5054,-0.0235` is E14 6FY centroid. Replace with exact rooftop GPS before real-world use.
 - **Approach polygons:** Starting coordinates in EDD are approximate. Expect to iterate on these after Phase 3 testing.
 - **STN/LGW visibility:** From E14, these may produce few or no visible flights. Keep in filter for now; remove if they only generate noise after testing.
 - **FR24 reliability:** The `fr24` package is undocumented. If it stops working, check PyPI for updates or alternatives.
