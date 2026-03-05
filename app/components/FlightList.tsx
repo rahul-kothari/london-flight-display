@@ -46,32 +46,37 @@ export default function FlightList() {
   const prevFlightsRef = useRef<Flight[]>([]);
 
   const refreshFlights = useCallback(async () => {
-    const response = await fetch("/api/flights");
-    const data = await response.json();
-    const filteredFlights: Flight[] = (data.flights_list ?? [])
-      .map((flight: any) => {
-        if (flight.lat == null || flight.lon == null) return null;
-        const dest = flight.extra_info?.route?.to;
-        const origin = flight.extra_info?.route?.from;
-        const location: Point = { x: flight.lon, y: flight.lat };
-        const distanceToHome = distanceBetweenPoints(location, home);
-        if (distanceToHome > MAX_DISTANCE_KM) return null;
-        const isArriving = LONDON_AIRPORTS.includes(dest);
-        const isDeparting = LONDON_AIRPORTS.includes(origin) && !isArriving;
-        const flightType: 'arriving' | 'departing' | 'transit' =
-          isArriving ? 'arriving' : isDeparting ? 'departing' : 'transit';
-        return { ...flight, flightType, distanceToHome };
-      })
-      .filter((flight: any): flight is Flight => flight !== null)
-      .sort((a: Flight, b: Flight) => {
-        const aIsLondon = a.flightType !== 'transit' ? 0 : 1;
-        const bIsLondon = b.flightType !== 'transit' ? 0 : 1;
-        if (aIsLondon !== bIsLondon) return aIsLondon - bIsLondon;
-        return a.distanceToHome - b.distanceToHome;
-      });
-    if (flightsChanged(prevFlightsRef.current, filteredFlights)) {
-      prevFlightsRef.current = filteredFlights;
-      setLiveFlights(filteredFlights);
+    try {
+      const response = await fetch("/api/flights");
+      if (!response.ok) return;
+      const data = await response.json();
+      const filteredFlights: Flight[] = (data.flights_list ?? [])
+        .map((flight: any) => {
+          if (flight.lat == null || flight.lon == null) return null;
+          const dest = flight.extra_info?.route?.to;
+          const origin = flight.extra_info?.route?.from;
+          const location: Point = { x: flight.lon, y: flight.lat };
+          const distanceToHome = distanceBetweenPoints(location, home);
+          if (distanceToHome > MAX_DISTANCE_KM) return null;
+          const isArriving = LONDON_AIRPORTS.includes(dest);
+          const isDeparting = LONDON_AIRPORTS.includes(origin) && !isArriving;
+          const flightType: 'arriving' | 'departing' | 'transit' =
+            isArriving ? 'arriving' : isDeparting ? 'departing' : 'transit';
+          return { ...flight, flightType, distanceToHome };
+        })
+        .filter((flight: any): flight is Flight => flight !== null)
+        .sort((a: Flight, b: Flight) => {
+          const aIsLondon = a.flightType !== 'transit' ? 0 : 1;
+          const bIsLondon = b.flightType !== 'transit' ? 0 : 1;
+          if (aIsLondon !== bIsLondon) return aIsLondon - bIsLondon;
+          return a.distanceToHome - b.distanceToHome;
+        });
+      if (flightsChanged(prevFlightsRef.current, filteredFlights)) {
+        prevFlightsRef.current = filteredFlights;
+        setLiveFlights(filteredFlights);
+      }
+    } catch {
+      // API unavailable — keep showing previous flights
     }
   }, []);
 
