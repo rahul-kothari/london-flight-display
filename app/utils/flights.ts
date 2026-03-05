@@ -115,6 +115,7 @@ export interface Airport {
   name: string;
   flag: string;
   region?: string;
+  useCode?: boolean;
 }
 
 const airports: { [id: string]: Airport } = {
@@ -213,10 +214,10 @@ const airports: { [id: string]: Airport } = {
   'LAD': { name: 'Luanda', flag: '🇦🇴' },
   'LAX': { name: 'Los Angeles', flag: '🇺🇸' },
   'LCA': { name: 'Larnaca', flag: '🇨🇾' },
-  'BQH': { name: 'Biggin Hill', flag: '🇬🇧' },
-  'FAB': { name: 'Farnborough', flag: '🇬🇧' },
-  'NHT': { name: 'RAF Northolt', flag: '🇬🇧' },
-  'SEN': { name: 'London Southend', flag: '🇬🇧' },
+  'BQH': { name: 'Biggin Hill', flag: '🇬🇧', useCode: true },
+  'FAB': { name: 'Farnborough', flag: '🇬🇧', useCode: true },
+  'NHT': { name: 'RAF Northolt', flag: '🇬🇧', useCode: true },
+  'SEN': { name: 'London Southend', flag: '🇬🇧', useCode: true },
   'ABZ': { name: 'Aberdeen', flag: '🇬🇧' },
   'BOH': { name: 'Bournemouth', flag: '🇬🇧' },
   'EXT': { name: 'Exeter', flag: '🇬🇧' },
@@ -225,13 +226,14 @@ const airports: { [id: string]: Airport } = {
   'NCL': { name: 'Newcastle', flag: '🇬🇧' },
   'LED': { name: 'St Petersburg', flag: '🇷🇺' },
   'LGG': { name: 'Liège', flag: '🇧🇪' },
-  'LGW': { name: 'London Gatwick', flag: '🇬🇧' },
-  'LHR': { name: 'London Heathrow', flag: '🇬🇧' },
+  'LCY': { name: 'London City', flag: '🇬🇧', useCode: true },
+  'LGW': { name: 'London Gatwick', flag: '🇬🇧', useCode: true },
+  'LHR': { name: 'London Heathrow', flag: '🇬🇧', useCode: true },
   'LIN': { name: 'Milan Linate', flag: '🇮🇹' },
   'LJU': { name: 'Ljubljana', flag: '🇸🇮' },
   'LIS': { name: 'Lisbon', flag: '🇵🇹' },
   'LPA': { name: 'Gran Canaria', flag: '🇪🇸' },
-  'LTN': { name: 'London Luton', flag: '🇬🇧' },
+  'LTN': { name: 'London Luton', flag: '🇬🇧', useCode: true },
   'LUX': { name: 'Luxembourg', flag: '🇱🇺' },
   'LYS': { name: 'Lyon', flag: '🇫🇷' },
   'MAD': { name: 'Madrid', flag: '🇪🇸' },
@@ -294,7 +296,7 @@ const airports: { [id: string]: Airport } = {
   'SMA': { name: 'Santa Maria', flag: '🇵🇹' },
   'SPU': { name: 'Split', flag: '🇭🇷' },
   'SSA': { name: 'Salvador', flag: '🇧🇷' },
-  'STN': { name: 'London Stansted', flag: '🇬🇧' },
+  'STN': { name: 'London Stansted', flag: '🇬🇧', useCode: true },
   'STR': { name: 'Stuttgart', flag: '🇩🇪' },
   'SVQ': { name: 'Seville', flag: '🇪🇸' },
   'TAS': { name: 'Tashkent', flag: '🇺🇿' },
@@ -333,4 +335,9 @@ const airports: { [id: string]: Airport } = {
   'ZRH': { name: 'Zurich', flag: '🇨🇭' },
 };
 
-export const getAirport = (airport: string) => airports[airport] || { name: `Abroad (${airport})`, flag: '🌍' };
+export const getAirport = (airport: string) => airports[airport] || { name: airport ? `Abroad (${airport})` : 'Abroad', flag: '🌍' };
+
+export const getAirportName = (code: string) => {
+  const a = getAirport(code);
+  return a.useCode ? code : a.name;
+};

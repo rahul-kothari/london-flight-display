@@ -1,4 +1,4 @@
-import { Airport, getAirport } from "../utils/flights";
+import { Airport, getAirport, getAirportName } from "../utils/flights";
 import { Counter } from "./Counter";
 
 interface FlightProps {
@@ -24,9 +24,9 @@ export default function Flight({ airport, flightType, number, plane, airline, di
         <a href={`https://www.flightradar24.com/${callsign}`} target="_blank" rel="noreferrer">
           {route ? (
             <>
-              {getAirport(route.from).flag} {getAirport(route.from).name}
+              {getAirport(route.from).flag} {getAirportName(route.from)}
               {' → '}
-              {getAirport(route.to).name} {getAirport(route.to).flag}
+              {getAirportName(route.to)} {getAirport(route.to).flag}
             </>
           ) : (
             <>{airport.flag} {airport.name}</>

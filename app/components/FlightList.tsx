@@ -72,7 +72,7 @@ export default function FlightList() {
       {liveFlights.map((flight) => (
         <ErrorBoundary key={flight.extraInfo.flight ?? flight.callsign} fallbackRender={({ error }) => <pre>{error.message}</pre>}>
           <Flight
-            airport={getAirport(flight.flightType === 'arriving' ? flight.extraInfo.route.from : flight.extraInfo.route.to)}
+            airport={getAirport(flight.flightType === 'arriving' ? flight.extraInfo.route?.from : flight.extraInfo.route?.to)}
             flightType={flight.flightType}
             number={flight.extraInfo.flight}
             plane={getPlane(flight.extraInfo.type)}
