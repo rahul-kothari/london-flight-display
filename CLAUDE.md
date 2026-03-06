@@ -17,22 +17,24 @@ Forked from a Lisbon equivalent that tracked flights, trains, and boats.
 - Local for now, then deploy to **Vercel free tier**
 
 ## Architecture
-- **Frontend:** Next.js 13 + React 18 + TypeScript + Tailwind CSS
-- **Backend:** FastAPI (Python) served at `/api/*`
-- **Glue:** `next.config.js` rewrites `/api/*` → FastAPI on port 8000 locally; Vercel serverless in prod
-- **Flight data:** `fr24==0.2.4` Python package — hits Flightradar24's undocumented protobuf API. **Free, no key required.** Could break if FR24 changes internals.
+- **Frontend:** Next.js 13 + React 18 + TypeScript + Tailwind CSS (static export)
+- **Backend:** Cloudflare Pages Function (TypeScript) at `functions/api/flights.ts`
+- **Glue:** Cloudflare Pages serves the static Next.js export and `/api/*` functions automatically. No rewrites needed.
+- **Flight data:** FR24 JSON endpoint (undocumented) — plain `fetch()` with User-Agent header. Free, no key required. Could break if FR24 changes internals or blocks Cloudflare datacenter IPs.
 
 ## Key Files
 | File | Role |
 |---|---|
-| `api/index.py` | FastAPI app — `/api/flights` endpoint, London bounding box query |
-| `app/components/FlightList.tsx` | Fetches flights, filters to 5km radius from home, classifies arriving/departing/transit, sorts by distance |
+| `functions/api/flights.ts` | Cloudflare Pages Function — fetches FR24 JSON, filters to 5km, caches 10s via Cache API |
+| `functions/lib/parseFlight.ts` | Maps FR24 positional array → flight object |
+| `functions/lib/geo.ts` | Haversine function for the Worker |
+| `functions/lib/filter.ts` | Applies radius filter to parsed flight list |
+| `app/components/FlightList.tsx` | Fetches flights, classifies arriving/departing/transit, sorts by distance |
 | `app/components/Flight.tsx` | Renders a single flight card |
 | `app/utils/flights.ts` | Airline, aircraft type, airport name lookup maps |
 | `app/utils/geo.ts` | Haversine distance, knots→km/s. Point uses `x=lon, y=lat`. |
 | `app/page.tsx` | Root page, renders FlightList |
-| `next.config.js` | API rewrite rules |
-| `vercel.json` | Vercel Python serverless config |
+| `wrangler.toml` | Cloudflare Pages configuration |
 
 ## Environment Variables
 | Variable | Purpose | Value |
@@ -44,22 +46,16 @@ Set in `.env.local` for local dev. Set in Vercel dashboard for production.
 ## Running Locally
 
 ```bash
-# 1. Install Node dependencies (first time only)
+# 1. Install dependencies (first time only)
 npm install
 
-# 2. Install Python dependencies (first time only — pyarrow is large, can timeout)
-python3 -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
-
-# 3. Start both servers
+# 2. Start dev server
 npm run dev
 ```
 
-- **Next.js** → http://localhost:3000
-- **FastAPI** → http://127.0.0.1:8000
+- **App + API** → http://localhost:8788 (wrangler proxies Next.js and intercepts `/api/*`)
 
-`npm run dev` runs both concurrently via `concurrently`. The fastapi-dev script auto-creates the venv and pip-installs, but on first run it can timeout on the pyarrow download — run step 2 manually if that happens.
+`npm run dev` runs `wrangler pages dev --proxy 3000 -- next dev`. Wrangler starts Next.js on port 3000 and serves everything (including Pages Functions) on port 8788.
 
 ## Flight Filtering Logic
 The radius filter lives in **`api/index.py`** (server-side):
@@ -90,7 +86,7 @@ See `docs/PLAN.md` for full task tracking. Phases 1–4 complete. Phase 5 (Verce
 - **Filtering:** 5km radius from home only — no airport filter. All flights in range are shown.
 - **Sleep Lock:** Removed
 - **Map view:** Removed
-- **Hosting:** Vercel free tier when ready
+- **Hosting:** Cloudflare Pages (free tier)
 
 ## Keeping Docs in Sync
 When any code change alters behaviour, architecture, or decisions — update these files before closing the task:
@@ -115,6 +111,7 @@ Do NOT claim a change is correct unless all three pass.
 - Mock browser APIs unavailable in jsdom (e.g. `requestAnimationFrame`) with `vi.stubGlobal`
 
 ## Notes for Future Sessions
-- The `fr24` package is undocumented/reverse-engineered — if it breaks, check PyPI for updates or look at `flightradar24` as an alternative
-- `pyarrow` (a `fr24` dependency) is 26MB and can timeout on first pip install — always install Python deps manually before running if setting up fresh
-- The 5km radius is tunable via `MAX_DISTANCE_KM` in `FlightList.tsx`
+- The FR24 JSON endpoint is undocumented. If it stops returning data after deployment, check if Cloudflare's datacenter IPs are being blocked — test the URL from a residential IP first.
+- Cold start is ~0ms (V8 isolates). No timeout risk.
+- The Cloudflare Cache API stores the raw FR24 bounding box response for 10s, shared across all Worker instances. The haversine filter runs per-request against the cached data.
+- The 5km radius is tunable via `MAX_DISTANCE_KM` in `functions/api/flights.ts`

@@ -49,7 +49,7 @@ export default function FlightList() {
     try {
       const response = await fetch(`/api/flights?lat=${home.y}&lon=${home.x}`);
       if (!response.ok) return;
-      const data = await response.json();
+      const data = await response.json() as { flights_list?: unknown[] };
       const filteredFlights: Flight[] = (data.flights_list ?? [])
         .map((flight: any) => {
           if (flight.lat == null || flight.lon == null) return null;
