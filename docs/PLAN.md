@@ -59,7 +59,7 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done
 
 - [x] **4.1** Update `README.md` — replace boilerplate with actual project description
 - [x] **4.2** MVP checkpoint: decide whether to keep or remove the map view — removed in Phase 1 (BoatMap.tsx deleted); leaflet/react-leaflet deps also removed
-- [ ] **4.3** Check `fr24` package version — consider upgrading if newer version available on PyPI
+- [x] **4.3** Check `fr24` package version — consider upgrading if newer version available on PyPI
 
 ---
 

@@ -14,21 +14,20 @@ export function Counter({ value, speed }: CounterProps) {
 
   const formatValue = (val: number) => val.toFixed(2);
 
-  const calculate = () => {
-    const now = Date.now();
-    const elapsedTime = now - startTime.current;
-    const delta = elapsedTime / 1000 * (speed ?? 0);
-    currentVal.current = value + delta;
-
-    if (ref.current) {
-      ref.current.textContent = formatValue(currentVal.current);
-    }
-
-    animationRef.current = requestAnimationFrame(calculate);
-  }
-
   useEffect(() => {
     startTime.current = Date.now();
+    const calculate = () => {
+      const now = Date.now();
+      const elapsedTime = now - startTime.current;
+      const delta = elapsedTime / 1000 * (speed ?? 0);
+      currentVal.current = value + delta;
+
+      if (ref.current) {
+        ref.current.textContent = formatValue(currentVal.current);
+      }
+
+      animationRef.current = requestAnimationFrame(calculate);
+    };
     animationRef.current = requestAnimationFrame(calculate);
     return () => cancelAnimationFrame(animationRef.current!);
   }, [value, speed]);

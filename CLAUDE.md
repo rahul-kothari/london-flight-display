@@ -62,8 +62,13 @@ npm run dev
 `npm run dev` runs both concurrently via `concurrently`. The fastapi-dev script auto-creates the venv and pip-installs, but on first run it can timeout on the pyarrow download — run step 2 manually if that happens.
 
 ## Flight Filtering Logic
-Single filter in `FlightList.tsx`:
-- **Radius filter** — flight's current position must be within **5km** of `NEXT_PUBLIC_HOME_COORDINATE`. All flights in range are shown regardless of route.
+The radius filter lives in **`api/index.py`** (server-side):
+- **Radius filter** — `haversine_km` filters flights to within **5km** of the home coordinate (passed as `?lat=&lon=` query params). Only matching flights are returned in the response.
+
+`FlightList.tsx` receives only the pre-filtered list. It then:
+- Computes `distanceToHome` for display and sort order only (no filtering)
+- Classifies each flight as `arriving`/`departing`/`transit` using `LONDON_AIRPORTS`
+- Sorts London-airport flights first, then by distance
 
 `LONDON_AIRPORTS = ['LHR', 'LCY', 'LGW', 'STN']` is **not a filter** — it only classifies `flightType` as `'arriving'`, `'departing'`, or `'transit'` for display purposes.
 

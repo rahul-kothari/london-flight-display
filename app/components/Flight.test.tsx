@@ -2,9 +2,6 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import Flight from './Flight'
 
-// Mock leaflet (used transitively by react-leaflet) — not needed in unit tests
-vi.mock('leaflet', () => ({}))
-
 // Mock Counter to avoid requestAnimationFrame complexity in this test file
 vi.mock('./Counter', () => ({
   Counter: ({ value }: { value: number }) => <span>{value.toFixed(2)}</span>,

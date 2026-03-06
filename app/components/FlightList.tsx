@@ -41,6 +41,7 @@ function flightsChanged(prev: Flight[], next: Flight[]): boolean {
 
 export default function FlightList() {
   const [liveFlights, setLiveFlights] = useState<Flight[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const prevFlightsRef = useRef<Flight[]>([]);
 
   const refreshFlights = useCallback(async () => {
@@ -75,6 +76,8 @@ export default function FlightList() {
       }
     } catch {
       // API unavailable — keep showing previous flights
+    } finally {
+      setIsLoading(false);
     }
   }, []);
 
@@ -89,6 +92,9 @@ export default function FlightList() {
       Missing NEXT_PUBLIC_HOME_COORDINATE — set this environment variable in your Vercel dashboard.
     </div>
   );
+
+  if (isLoading) return <div className="p-8 text-gray-400">Loading flights…</div>;
+  if (liveFlights.length === 0) return <div className="p-8 text-gray-400">No flights overhead right now.</div>;
 
   return (
     <div>
