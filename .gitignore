@@ -35,3 +35,10 @@ yarn-error.log*
 next-env.d.ts
 
 venv
+
+# worktrees
+.worktrees
+
+# wrangler local dev state
+.wrangler
+*.swp
