@@ -2,7 +2,7 @@
 
 **Date:** 2026-03-06
 **Branch:** `cloudflare`
-**Status:** Approved — pending implementation
+**Status:** Abandoned — see Post-Mortem below
 
 ---
 
@@ -131,3 +131,39 @@ All 29 existing frontend tests remain untouched.
 ## Known Risk
 
 Cloudflare outbound requests come from datacenter IPs. FR24 may rate-limit or block them. Cannot verify without deploying. If blocked, the branch is abandoned and `main` (Vercel) remains the deployment target.
+
+---
+
+## Post-Mortem (2026-03-06)
+
+**Branch abandoned. Deployment target remains `main` → Vercel.**
+
+### What was built
+
+The full Cloudflare Pages migration was implemented and all tests pass (44/44):
+- `functions/api/flights.ts` — Pages Function with Cloudflare Cache API
+- `functions/lib/{geo,parseFlight,filter}.ts` — pure TypeScript, fully tested
+- Static Next.js export, wrangler.toml, updated scripts
+
+### What failed
+
+The FR24 **JSON** endpoint (`data-live.flightradar24.com/zones/fcgi/feed.js`) has been **deprecated by FR24**. It now returns a 302 redirect to `https://www.flightradar24.com/static/legacy/feed.json`, a static file that always returns:
+
+```json
+{"aircraft":[],"full_count":0,"version":5}
+```
+
+The Python `fr24==0.2.4` package on `main` uses a completely different transport — the **protobuf/gRPC LiveFeed API** — which is still functional. That API is binary and complex to consume from a TypeScript Worker without a protobuf library.
+
+### Why the Worker itself is sound
+
+The architecture (Cloudflare Pages + Pages Function + TypeScript + Cache API) works correctly. The dev setup, compilation, caching, filtering, and response shape all work as designed. The only failure is the data source.
+
+### Path forward if Cloudflare is revisited
+
+Replace `FR24_URL` in `functions/api/flights.ts` with a different free ADS-B source:
+
+- **`adsb.fi`** (`https://opendata.adsb.fi/api/v2/lat/{lat}/lon/{lon}/dist/5`) — free, no key, returns flight number + aircraft type + lat/lon/speed. **No route data** (from/to airports), so arriving/departing classification and airport display would be lost.
+- **OpenSky Network** (`https://opensky-network.org/api/states/all?...`) — free, no key, rate-limited to 10s intervals. Returns even less metadata than adsb.fi.
+
+Neither alternative matches the richness of FR24's protobuf feed. Accept the trade-off or stay on Vercel.

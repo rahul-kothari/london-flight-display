@@ -49,13 +49,14 @@ Set in `.env.local` for local dev. Set in Vercel dashboard for production.
 # 1. Install dependencies (first time only)
 npm install
 
-# 2. Start dev server
-npm run dev
+# 2a. Frontend-only dev (fast, hot reload — /api/flights gracefully shows "No flights overhead")
+npm run dev        # → http://localhost:3000
+
+# 2b. Full-stack preview (builds static export + runs Pages Function via wrangler)
+npm run preview    # → http://localhost:8788
 ```
 
-- **App + API** → http://localhost:8788 (wrangler proxies Next.js and intercepts `/api/*`)
-
-`npm run dev` runs `wrangler pages dev --proxy 3000 -- next dev`. Wrangler starts Next.js on port 3000 and serves everything (including Pages Functions) on port 8788.
+Use `npm run dev` for UI development. Use `npm run preview` when you need to test the actual `/api/flights` function locally.
 
 ## Flight Filtering Logic
 The radius filter lives in **`api/index.py`** (server-side):
