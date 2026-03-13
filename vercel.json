@@ -1,8 +1,7 @@
 {
   "functions": {
     "api/**": {
-      "excludeFiles": "{.next,*.cache,node_modules,public,app}/**",
-      "runtime": "python3.11"
+      "excludeFiles": "{.next,*.cache,node_modules,public,app}/**"
     }
   }
 }
