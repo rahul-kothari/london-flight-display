@@ -1,15 +1,18 @@
 import math
-import time
+import logging
 from fastapi import FastAPI, Query
 from fr24 import FR24, BoundingBox
 
+logger = logging.getLogger(__name__)
 app = FastAPI()
 
 LONDON_BBOX = BoundingBox(north=51.80, south=51.20, west=-0.70, east=0.35)
-CACHE_TTL_SECONDS = 10
 MAX_DISTANCE_KM = 5
-
-_cache: dict = {"data": None, "timestamp": 0}
+# Reject coordinates more than this far from central London before hitting FR24.
+# Prevents the endpoint being used as a free FR24 proxy for arbitrary locations.
+LONDON_LAT = 51.5
+LONDON_LON = -0.1
+MAX_HOME_OFFSET_KM = 50
 
 
 def haversine_km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
@@ -21,24 +24,23 @@ def haversine_km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
     return R * 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
 
 
-async def flight_data() -> dict:
-    now = time.monotonic()
-    if _cache["data"] is not None and (now - _cache["timestamp"]) < CACHE_TTL_SECONDS:
-        return _cache["data"]
-    async with FR24() as fr24:
-        result = await fr24.live_feed.fetch(LONDON_BBOX)
-        data = result.to_dict()
-    _cache["data"] = data
-    _cache["timestamp"] = now
-    return data
-
-
 @app.get("/api/flights")
 async def get_data(
-    lat: float = Query(..., description="Home latitude"),
-    lon: float = Query(..., description="Home longitude"),
+    lat: float = Query(..., ge=-90, le=90, description="Home latitude"),
+    lon: float = Query(..., ge=-180, le=180, description="Home longitude"),
 ):
-    data = await flight_data()
+    # Guard: reject coordinates outside the London area to prevent proxy abuse.
+    if haversine_km(lat, lon, LONDON_LAT, LONDON_LON) > MAX_HOME_OFFSET_KM:
+        return {"flights_list": []}
+
+    try:
+        async with FR24() as fr24:
+            result = await fr24.live_feed.fetch(LONDON_BBOX)
+            data = result.to_dict()
+    except Exception as exc:
+        logger.error("FR24 fetch failed: %s", exc)
+        return {"flights_list": []}
+
     nearby = []
     for f in data.get("flights_list", []):
         flat = f.get("lat")

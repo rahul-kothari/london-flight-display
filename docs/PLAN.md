@@ -102,18 +102,21 @@ FlightList.tsx → logFlights() → IndexedDB (dedup by flightNumber + date)
 **Display rule:** Grouped stats (by airline, airport, aircraft type) only show entries with >2 occurrences.
 
 **Tasks:**
-- [ ] **6.1** Create `app/utils/flightStore.ts` — IndexedDB open/upgrade, `logFlights()` (idempotent dedup), `getStats()` (aggregated), `getAllSightings()` (raw), `getUnknownAirports()` (see 6.1a). Raw IndexedDB API, no library.
-  - [ ] **6.1a** Track unknown airports: whenever `getAirport()` returns the `Abroad (XYZ)` fallback (i.e. no entry in `flights.ts`), record the raw IATA code in an `unknown_airports` store (key: IATA code, value: `{ code, seenCount, lastSeen }`). Expose via `getUnknownAirports()` returning codes sorted by `seenCount` desc — so we can periodically review and add the most-seen missing codes to `flights.ts`.
-- [ ] **6.2** Hook into `FlightList.tsx` — call `logFlights(filteredFlights)` after filtering in `refreshFlights()`
-- [ ] **6.3** Create `app/components/StatsSummary.tsx` — collapsible panel on main page: today's flight count, top 3 airlines, airport split (only entries >2)
-- [ ] **6.4** Create `app/stats/page.tsx` — dedicated route with date picker, flights per day (CSS bar chart), tables for airline/airport/aircraft breakdowns (entries >2 only)
-- [ ] **6.5** Add `<StatsSummary />` to `app/page.tsx` + link to `/stats`
-- [ ] **6.6** Add `fake-indexeddb` dev dep, create `app/utils/flightStore.test.ts` + `app/components/StatsSummary.test.tsx`
-- [ ] **6.7** Verify: `npx tsc --noEmit`, `npm run lint`, `npm test` all pass
-- [ ] **6.8** Optimise - reduce RAM usage etc.
-- [ ] **6.9** Smooth UI jerk when flights update — two-part fix:
+- [x] **6.1** Create `app/utils/flightStore.ts` — IndexedDB open/upgrade, `logFlights()` (idempotent dedup), `getStats()` (aggregated), `getAllSightings()` (raw), `getUnknownAirports()` (see 6.1a). Raw IndexedDB API, no library.
+  - [x] **6.1a** Track unknown airports: IATA codes not in `flights.ts` recorded in `unknown_airports` store (`{ code, seenCount, lastSeen }`). Exposed via `getUnknownAirports()`.
+- [x] **6.2** Hook into `FlightList.tsx` — `logFlights()` called on change via `flightsChanged()` (Set-based, not positional)
+- [x] **6.3** Create `app/components/StatsSummary.tsx` — collapsible panel: combined today count (commercial + non-commercial), top airlines, airports (2+ only), unknown airports
+- [x] **6.4** Create `app/stats/page.tsx` — 7-day bar chart (short day names), day navigator, airline/airport/aircraft breakdowns, non-commercial flights list
+- [x] **6.5** Add `<StatsSummary />` to `app/page.tsx` + link to `/stats`
+- [x] **6.6** Add `fake-indexeddb` dev dep, create `app/utils/flightStore.test.ts` (32 tests) + `app/components/StatsSummary.test.tsx` (7 tests)
+- [x] **6.7** Verify: `npx tsc --noEmit`, `npm run lint`, `npm test` all pass (68 tests)
+- [x] **6.8** Optimise - reduce RAM usage etc.
+  - `getStats()` private jets limited to 7-day IDBKeyRange (no all-time load needed)
+  - `Counter` rAF capped to 10fps (was 60fps per card); loop exits when speed=0
+  - TODO: replace all-time sightings read with incremental aggregates store when dataset grows
+- [ ] **6.9** Smooth UI jerk when flights update *(future work)*
   - Animate flight cards in/out with opacity + translateY CSS transitions (needs `framer-motion` or manual CSS with a "leaving" state before DOM removal)
-  - Prevent StatsSummary from jumping: give FlightList a `min-height` based on expected card count, or make StatsSummary `position: sticky` at the bottom so it doesn't shift with list height changes
+  - Prevent StatsSummary from jumping: give FlightList a `min-height` based on expected card count, or make StatsSummary `position: sticky` at the bottom
 
 **Future: Turso migration** (after hosting is live)
 1. Create free Turso account + database
@@ -122,8 +125,6 @@ FlightList.tsx → logFlights() → IndexedDB (dedup by flightNumber + date)
 4. Swap `flightStore.ts` from IndexedDB to API fetch calls (same `getStats()` interface — stats components unchanged)
 5. Env vars: `TURSO_DATABASE_URL` + `TURSO_AUTH_TOKEN` in Vercel
 6. Optional: one-time migration script to export IndexedDB → Turso
-
----
 
 ## Phase 7: Browser Geolocation
 

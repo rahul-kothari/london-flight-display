@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { Point, distanceBetweenPoints, knotsToKmPerSec } from "../utils/geo";
 import { getAirline, getAirport, getPlane } from "../utils/flights";
+import { logFlights } from "../utils/flightStore";
 import Flight from "./Flight";
 
 const _homeCoord = process.env.NEXT_PUBLIC_HOME_COORDINATE;
@@ -31,9 +32,13 @@ interface Flight {
 
 function flightsChanged(prev: Flight[], next: Flight[]): boolean {
   if (prev.length !== next.length) return true;
-  for (let i = 0; i < prev.length; i++) {
-    const p = prev[i], n = next[i];
-    if (p.callsign !== n.callsign || p.flightType !== n.flightType) return true;
+  // Compare by callsign identity, not position — positional comparison misses
+  // the case where one flight exits and another enters with the same total count.
+  const prevMap = new Map(prev.map((f) => [f.callsign, f]));
+  for (const n of next) {
+    const p = prevMap.get(n.callsign);
+    if (!p) return true; // new callsign entered the radius
+    if (p.flightType !== n.flightType) return true;
     if (Math.abs(p.distanceToHome - n.distanceToHome) > 0.05) return true;
   }
   return false;
@@ -73,6 +78,16 @@ export default function FlightList() {
       if (flightsChanged(prevFlightsRef.current, filteredFlights)) {
         prevFlightsRef.current = filteredFlights;
         setLiveFlights(filteredFlights);
+        logFlights(
+          filteredFlights.map((f) => ({
+            callsign: f.callsign,
+            flightNumber: f.extra_info.flight ?? undefined,
+            aircraftType: f.extra_info.type,
+            origin: f.extra_info.route?.from ?? '',
+            destination: f.extra_info.route?.to ?? '',
+            flightType: f.flightType,
+          }))
+        ).catch(() => {});
       }
     } catch {
       // API unavailable — keep showing previous flights
@@ -98,8 +113,8 @@ export default function FlightList() {
 
   return (
     <div>
-      {liveFlights.map((flight) => (
-        <ErrorBoundary key={flight.extra_info.flight ?? flight.callsign} fallbackRender={({ error }) => <pre>{error.message}</pre>}>
+      {liveFlights.map((flight, index) => (
+        <ErrorBoundary key={flight.extra_info.flight ?? flight.callsign ?? `idx-${index}`} fallbackRender={({ error }) => <pre>{error.message}</pre>}>
           <Flight
             airport={getAirport(flight.flightType === 'arriving' ? flight.extra_info.route?.from : flight.extra_info.route?.to)}
             flightType={flight.flightType}
@@ -107,6 +122,9 @@ export default function FlightList() {
             plane={getPlane(flight.extra_info.type)}
             airline={flight.extra_info.flight ? getAirline(flight.extra_info.flight) : "Private Jet"}
             distance={flight.distanceToHome}
+            // Speed is negated so the distance counter animates downward between polls.
+            // This is intentional cosmetic dead-reckoning: planes overhead are more
+            // often approaching than receding. Not physically precise — resets on next poll.
             speed={knotsToKmPerSec(flight.speed ?? 0) * -1}
             callsign={flight.callsign}
             route={flight.extra_info.route}

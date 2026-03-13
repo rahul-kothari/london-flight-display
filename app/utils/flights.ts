@@ -109,7 +109,9 @@ const airlines: { [id: string]: string } = {
   'ZB': 'Air Albania',
 }
 
-export const getAirline = (flight: string) => flight ? airlines[flight.substring(0, 2)] || flight.substring(0, 2) : '?';
+// Accepts either a 2-char IATA airline code ("BA") or a full flight number ("BA123").
+// Extracts the first 2 characters either way.
+export const getAirline = (codeOrFlight: string) => codeOrFlight ? airlines[codeOrFlight.substring(0, 2)] || codeOrFlight.substring(0, 2) : '?';
 
 export interface Airport {
   name: string;
@@ -201,6 +203,7 @@ const airports: { [id: string]: Airport } = {
   'GVA': { name: 'Geneva', flag: '🇨🇭' },
   'HAM': { name: 'Hamburg', flag: '🇩🇪' },
   'HEL': { name: 'Helsinki', flag: '🇫🇮' },
+  'HND': { name: 'Tokyo Haneda', flag: '🇯🇵' },
   'IAD': { name: 'Washington Dulles', flag: '🇺🇸' },
   'IAS': { name: 'Iași', flag: '🇷🇴' },
   'IBZ': { name: 'Ibiza', flag: '🇪🇸' },
@@ -284,6 +287,7 @@ const airports: { [id: string]: Airport } = {
   'PUY': { name: 'Pula', flag: '🇭🇷' },
   'POZ': { name: 'Poznań', flag: '🇵🇱' },
   'PDV': { name: 'Plovdiv', flag: '🇧🇬' },
+  'PEK': { name: 'Beijing Capital', flag: '🇨🇳' },
   'PRG': { name: 'Prague', flag: '🇨🇿' },
   'PUJ': { name: 'Punta Cana', flag: '🇩🇴' },
   'RAI': { name: 'Praia', flag: '🇨🇻' },
@@ -349,6 +353,8 @@ const airports: { [id: string]: Airport } = {
   'ZTH': { name: 'Zakynthos', flag: '🇬🇷' },
   'ZRH': { name: 'Zurich', flag: '🇨🇭' },
 };
+
+export const isKnownAirport = (code: string): boolean => code in airports;
 
 export const getAirport = (airport: string) => airports[airport] || { name: airport ? `Abroad (${airport})` : 'Abroad', flag: '🌍' };
 
