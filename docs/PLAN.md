@@ -111,6 +111,9 @@ FlightList.tsx → logFlights() → IndexedDB (dedup by flightNumber + date)
 - [ ] **6.6** Add `fake-indexeddb` dev dep, create `app/utils/flightStore.test.ts` + `app/components/StatsSummary.test.tsx`
 - [ ] **6.7** Verify: `npx tsc --noEmit`, `npm run lint`, `npm test` all pass
 - [ ] **6.8** Optimise - reduce RAM usage etc.
+- [ ] **6.9** Smooth UI jerk when flights update — two-part fix:
+  - Animate flight cards in/out with opacity + translateY CSS transitions (needs `framer-motion` or manual CSS with a "leaving" state before DOM removal)
+  - Prevent StatsSummary from jumping: give FlightList a `min-height` based on expected card count, or make StatsSummary `position: sticky` at the bottom so it doesn't shift with list height changes
 
 **Future: Turso migration** (after hosting is live)
 1. Create free Turso account + database
@@ -122,22 +125,61 @@ FlightList.tsx → logFlights() → IndexedDB (dedup by flightNumber + date)
 
 ---
 
-## Phase 7: OurAirports Dataset (Issue #1)
+## Phase 7: Browser Geolocation
 
-Replace the hardcoded ~100-airport map in `app/utils/flights.ts` with the full OurAirports dataset (~9k IATA airports). Fixes missing names/flags for intercontinental and smaller European routes.
+Replace the hardcoded `NEXT_PUBLIC_HOME_COORDINATE` env var with the browser's native Geolocation API. The coordinate is held in React state only — never persisted. If the user closes the tab and returns, a fresh geolocation request fires.
 
-- [ ] **7.1** Download `https://ourairports.com/data/airports.csv` and filter to rows with a non-empty `iata_code` (~9k rows)
-- [ ] **7.2** Write a build script (`scripts/build-airport-data.ts`) that outputs `app/utils/airport-data.json`: `{ [iata]: { name: string, iso_country: string } }`
-- [ ] **7.3** Add `countryToFlag()` helper in `flights.ts` that converts ISO 2-letter country code to flag emoji at runtime (no lookup table needed)
-- [ ] **7.4** Rewrite `getAirport()` in `flights.ts` to use `airport-data.json` — preserve `useCode: true` for London-area airports (LHR, LCY, LGW, STN, LTN, SEN, FAB, NHT, BQH)
-- [ ] **7.5** Delete the hardcoded `airports` map from `flights.ts`
-- [ ] **7.6** Update `getAirportName()` and `getAirline()` — verify no regressions
-- [ ] **7.7** Evaluate bundle impact: if JSON >300KB uncompressed, consider moving to `getStaticProps` so it stays server-side only
-- [ ] **7.8** Update tests in `app/utils/flights.test.ts` to cover the new lookup path and the `countryToFlag` helper
+**Scope:** any location within the existing London FR24 bounding box (`north=51.80, south=51.20, west=-0.70, east=0.35`). No backend changes required — `api/index.py` already accepts `?lat=&lon=` query params.
 
-**Trade-offs to decide before starting:**
-- Bundle the JSON in the client (simple, works on Vercel Edge) vs. fetch at build time via `getStaticProps` (keeps client bundle smaller)
-- Whether to commit `airport-data.json` to the repo or generate it at build time via a `prebuild` script
+**Architecture:**
+```
+app/page.tsx
+  └─ useGeolocation() hook
+       ├─ success  → coord state → <FlightList lat lon />
+       └─ error    → <LocationPicker onConfirm={setCoord} />
+                          (manual lat/lon entry form)
+```
+
+**Tasks:**
+
+- [ ] **7.1** Create `app/hooks/useGeolocation.ts`
+  - Calls `navigator.geolocation.getCurrentPosition()` on mount (one-shot, not `watchPosition`)
+  - Returns `{ state: 'loading' | 'ready' | 'error', lat?: number, lon?: number }`
+  - `loading` until the browser responds; `ready` on success; `error` on denial or API unavailable
+  - No storage — coordinate lives in hook state only
+
+- [ ] **7.2** Create `app/components/LocationPicker.tsx`
+  - Shown only when `state === 'error'`
+  - Single text input in `"lat, lon"` format (matches Google Maps "Copy coordinates" output)
+  - Validates that both values are numbers and within the London bounding box (lat 51.20–51.80, lon −0.70–0.35); shows inline error if not
+  - "Use this location" submit button
+  - Small helper text: _"Right-click your location on Google Maps → Copy coordinates"_
+  - Calls `onConfirm(lat, lon)` prop on valid submit
+
+- [ ] **7.3** Update `app/page.tsx`
+  - Call `useGeolocation()`
+  - `loading` → show a centred "Getting your location…" message (no spinner library — plain CSS)
+  - `error` → render `<LocationPicker onConfirm={setCoord} />`
+  - `ready` / manual coord set → render `<FlightList lat={coord.lat} lon={coord.lon} />`
+  - Remove any reads of `NEXT_PUBLIC_HOME_COORDINATE`
+
+- [ ] **7.4** Update `app/components/FlightList.tsx`
+  - Replace env var read (`NEXT_PUBLIC_HOME_COORDINATE`) with `lat: number; lon: number` props
+  - No other logic changes — filtering and display are unchanged
+
+- [ ] **7.5** Delete `NEXT_PUBLIC_HOME_COORDINATE` from:
+  - `.env.local`
+  - Vercel dashboard environment variables (manual step — note in task)
+  - Any remaining references in code (`grep -r NEXT_PUBLIC_HOME_COORDINATE`)
+
+- [ ] **7.6** Add tests
+  - `app/hooks/useGeolocation.test.ts` — mock `navigator.geolocation` with `vi.stubGlobal`; test success, denial, and unavailable (no API) paths
+  - `app/components/LocationPicker.test.tsx` — test validation (bad input, out-of-London coords, valid coords trigger `onConfirm`)
+
+- [ ] **7.7** Verify: `npx tsc --noEmit`, `npm run lint`, `npm test` all pass
+
+**Future consideration:**
+- If users near the bounding box edges (e.g. Heathrow perimeter, outer M25) report missing inbound traffic, widen the FR24 bounding box in `api/index.py`. The 5km home-radius filter is separate and unaffected.
 
 ---
 
