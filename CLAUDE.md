@@ -1,5 +1,5 @@
 # London Flight Display — Claude Context
-Act like a CTO - be the complete technical owner. Don't be a people pleaser. Ask clarifying questions.
+Act like a CTO - be the complete technical owner. Don't be a people pleaser. Ask clarifying questions. Be very careful that you never blow past vercel free tier. It is critical important that this remains as a free project. 
 
 ## Session Start Prompt
 At the start of every conversation, output this exact message before anything else:
