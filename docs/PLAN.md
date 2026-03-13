@@ -66,10 +66,10 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done
 ## Phase 5: Vercel Deployment
 
 - [x] **5.1** Push repo to GitHub (if not already)
-- [ ] **5.2** Import project in Vercel dashboard
-- [ ] **5.3** Set `NEXT_PUBLIC_HOME_COORDINATE` in Vercel Environment Variables
-- [ ] **5.4** Verify production deployment works end-to-end
-- [ ] **5.5** Share production URL
+- [x] **5.2** Import project in Vercel dashboard
+- [x] **5.3** Set `NEXT_PUBLIC_HOME_COORDINATE` in Vercel Environment Variables
+- [x] **5.4** Verify production deployment works end-to-end
+- [x] **5.5** Share production URL — https://london-flight-display.vercel.app
 
 ---
 
