@@ -1,6 +1,9 @@
 {
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "/api/index" }
+  ],
   "functions": {
-    "api/**": {
+    "api/index.py": {
       "excludeFiles": "{.next,*.cache,node_modules,public,app}/**"
     }
   }
