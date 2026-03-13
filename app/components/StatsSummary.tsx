@@ -20,7 +20,7 @@ export default function StatsSummary() {
         aria-expanded={open}
         aria-controls="stats-panel"
       >
-        <span>Flight Stats</span>
+        <span>Flights You Have Seen (counted if tab is open, stored in your browser's 🍪)</span>
         <span>{open ? '▲' : '▼'}</span>
       </button>
 
@@ -68,8 +68,9 @@ export default function StatsSummary() {
           {stats.unknownAirports.length > 0 && (
             <div>
               <p className="text-gray-400 mb-1">
-                New airports seen{' '}
+                New airports seen{' '}  
                 <span className="font-bold">{stats.unknownAirports.length}</span>
+                <span> (report these!)</span>
               </p>
               {stats.unknownAirports.map(({ code, seenCount }) => (
                 <div key={code} className="flex justify-between">
