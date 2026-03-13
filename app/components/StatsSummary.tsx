@@ -20,7 +20,7 @@ export default function StatsSummary() {
         aria-expanded={open}
         aria-controls="stats-panel"
       >
-        <span>Flights You Have Seen (counted if tab is open, stored in your browser's 🍪)</span>
+        <span>Flights You Have Seen (counted if tab is open, stored in your browser&apos;s 🍪)</span>
         <span>{open ? '▲' : '▼'}</span>
       </button>
 
