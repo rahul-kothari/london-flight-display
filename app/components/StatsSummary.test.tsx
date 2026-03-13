@@ -26,7 +26,7 @@ vi.mock('../utils/flights', () => ({
 describe('StatsSummary', () => {
   it('renders collapsed with toggle button', () => {
     render(<StatsSummary />);
-    expect(screen.getByRole('button', { name: /flight stats/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /flights you have seen/i })).toBeInTheDocument();
     expect(screen.queryByText(/today/i)).not.toBeInTheDocument();
   });
 

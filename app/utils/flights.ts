@@ -171,6 +171,7 @@ const airports: { [id: string]: Airport } = {
   'CRL': { name: 'Brussels Charleroi', flag: '🇧🇪' },
   'CUN': { name: 'Cancún', flag: '🇲🇽' },
   'DBV': { name: 'Dubrovnik', flag: '🇭🇷' },
+  'DEL': { name: 'Delhi', flag: '🇮🇳' },
   'DJE': { name: 'Djerba', flag: '🇹🇳' },
   'DME': { name: 'Moscow Domodedovo', flag: '🇷🇺' },
   'DOH': { name: 'Doha', flag: '🇶🇦' },
@@ -192,6 +193,7 @@ const airports: { [id: string]: Airport } = {
   'FRA': { name: 'Frankfurt', flag: '🇩🇪' },
   'FLR': { name: 'Florence', flag: '🇮🇹' },
   'FUE': { name: 'Fuerteventura', flag: '🇪🇸' },
+  'GCI': { name: 'Guernsey', flag: '🇬🇬' },
   'GDN': { name: 'Gdańsk', flag: '🇵🇱' },
   'GYD': { name: 'Baku', flag: '🇦🇿' },
   'HAJ': { name: 'Hanover', flag: '🇩🇪' },
@@ -203,6 +205,7 @@ const airports: { [id: string]: Airport } = {
   'GVA': { name: 'Geneva', flag: '🇨🇭' },
   'HAM': { name: 'Hamburg', flag: '🇩🇪' },
   'HEL': { name: 'Helsinki', flag: '🇫🇮' },
+  'HKG': { name: 'Hong Kong', flag: '🇭🇰' },
   'HND': { name: 'Tokyo Haneda', flag: '🇯🇵' },
   'IAD': { name: 'Washington Dulles', flag: '🇺🇸' },
   'IAS': { name: 'Iași', flag: '🇷🇴' },
@@ -331,6 +334,7 @@ const airports: { [id: string]: Airport } = {
   'TLV': { name: 'Tel Aviv', flag: '🇮🇱' },
   'TLS': { name: 'Toulouse', flag: '🇫🇷' },
   'TNG': { name: 'Tangier', flag: '🇲🇦' },
+  'TPE': { name: 'Taipei', flag: '🇹🇼' },
   'TUN': { name: 'Tunis', flag: '🇹🇳' },
   'VCE': { name: 'Venice', flag: '🇮🇹' },
   'VIE': { name: 'Vienna', flag: '🇦🇹' },
@@ -352,6 +356,7 @@ const airports: { [id: string]: Airport } = {
   'ZAG': { name: 'Zagreb', flag: '🇭🇷' },
   'ZTH': { name: 'Zakynthos', flag: '🇬🇷' },
   'ZRH': { name: 'Zurich', flag: '🇨🇭' },
+  'ZYL': { name: 'Sylhet', flag: '🇧🇩' },
 };
 
 export const isKnownAirport = (code: string): boolean => code in airports;
